@@ -270,12 +270,9 @@ const App = () => {
                         <Zap size={14} className="fill-current" />
                         <span className="animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]">Real-Time Forensic Engine Active</span>
                     </div>
-                    <div className="flex items-center gap-6 mb-4">
-                        <img src="/logo.png" alt="Mule Trace Logo" className="w-20 h-20 rounded-2xl shadow-2xl border border-white/10" />
-                        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-gradient pb-2 bg-clip-text">
-                            MULE <br /><span className="text-blue-500">TRACE</span>
-                        </h1>
-                    </div>
+                    <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-gradient pb-2 bg-clip-text">
+                        MULE <br /><span className="text-blue-500">TRACE</span>
+                    </h1>
                     <p className="mt-4 text-slate-400 text-lg max-w-2xl font-light leading-relaxed">
                         Identify money muling networks and dispersal hierarchies using
                         <span className="text-slate-200"> behavioral graph analytics</span>.
