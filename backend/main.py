@@ -1,15 +1,31 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 import pandas as pd
 import io
 import time
 import traceback
 import json
-from engine import ForensicsEngine
-from models import AnalysisResponse, AnalysisSummary
+try:
+    from engine import ForensicsEngine
+    from models import AnalysisResponse, AnalysisSummary
+except ImportError:
+    from backend.engine import ForensicsEngine
+    from backend.models import AnalysisResponse, AnalysisSummary
 
 app = FastAPI(title="Financial Forensics Engine")
+
+# Global Exception Handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    print(f"CRITICAL ERROR: {exc}\n{traceback.format_exc()}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": str(exc),
+            "traceback": traceback.format_exc() if not isinstance(exc, HTTPException) else None
+        },
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,6 +35,7 @@ app.add_middleware(
 )
 
 engine = ForensicsEngine()
+router = APIRouter(prefix="/api")
 
 def analyze_dataframe(df: pd.DataFrame):
     """Reusable generator for forensic analysis stream"""
@@ -64,11 +81,15 @@ def analyze_dataframe(df: pd.DataFrame):
             yield f"data: {json.dumps({'error': str(e), 'complete': True})}\n\n"
     return generator()
 
-@app.get("/")
+@router.get("/health")
+def health_check():
+    return {"status": "healthy", "service": "Financial Forensics Engine API"}
+
+@router.get("/")
 def read_root():
     return {"message": "Financial Forensics Engine API"}
 
-@app.post("/upload")
+@router.post("/upload")
 async def upload_csv(file: UploadFile = File(...)):
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Only CSV files are allowed")
@@ -128,7 +149,7 @@ def map_columns(df: pd.DataFrame):
                     mapped_orig_cols.add(col)
                     match_found = True
                     break
-
+        
         if not match_found and target in ['sender_id', 'receiver_id', 'amount']:
             indices = {'sender_id': 1, 'receiver_id': 2, 'amount': 3}
             if len(df.columns) > indices.get(target, 999):
@@ -153,77 +174,71 @@ def map_columns(df: pd.DataFrame):
         
     return df[['transaction_id', 'sender_id', 'receiver_id', 'amount', 'timestamp']]
 
-@app.post("/ai-analyze/{account_id}")
+@router.post("/ai-analyze/{account_id}")
 async def ai_analyze_endpoint(account_id: str):
     """Generate a mock AI forensic deep-dive for hackathon demo"""
-    try:
-        if account_id not in engine.graph.nodes():
-            raise HTTPException(status_code=404, detail="Account not found")
-        
-        # Calculate actual stats for dynamic reporting
-        in_degree = engine.graph.in_degree(account_id)
-        out_degree = engine.graph.out_degree(account_id)
-        
-        node_tx = engine.df[(engine.df['sender_id'] == account_id) | (engine.df['receiver_id'] == account_id)].copy()
-        
-        # Temporal analysis logic
-        if not node_tx.empty and 'timestamp' in node_tx.columns:
-            try:
-                # Ensure datetime format
-                if not pd.api.types.is_datetime64_any_dtype(node_tx['timestamp']):
-                    node_tx['timestamp'] = pd.to_datetime(node_tx['timestamp'])
-                min_time = node_tx['timestamp'].min()
-                max_time = node_tx['timestamp'].max()
-                duration_hours = (max_time - min_time).total_seconds() / 3600
-                
-                if duration_hours < 1:
-                    temporal_detail = f"High intensity activity: {len(node_tx)} tx in under 1 hour."
-                else:
-                    velocity = len(node_tx) / max(1, duration_hours)
-                    temporal_detail = f"Temporal density: {velocity:.1f} tx/hr over a {duration_hours:.1f}h window."
-            except Exception:
-                temporal_detail = "Temporal anomaly: Clustering suggestive of automated script behavior."
-        else:
-            temporal_detail = "Insufficient temporal metadata available in source data."
+    if account_id not in engine.graph.nodes():
+        raise HTTPException(status_code=404, detail="Account not found")
+    
+    # Calculate actual stats for dynamic reporting
+    in_degree = engine.graph.in_degree(account_id)
+    out_degree = engine.graph.out_degree(account_id)
+    
+    node_tx = engine.df[(engine.df['sender_id'] == account_id) | (engine.df['receiver_id'] == account_id)].copy()
+    
+    # Temporal analysis logic
+    if not node_tx.empty and 'timestamp' in node_tx.columns:
+        try:
+            # Ensure datetime format
+            if not pd.api.types.is_datetime64_any_dtype(node_tx['timestamp']):
+                node_tx['timestamp'] = pd.to_datetime(node_tx['timestamp'])
+            min_time = node_tx['timestamp'].min()
+            max_time = node_tx['timestamp'].max()
+            duration_hours = (max_time - min_time).total_seconds() / 3600
+            
+            if duration_hours < 1:
+                temporal_detail = f"High intensity activity: {len(node_tx)} tx in under 1 hour."
+            else:
+                velocity = len(node_tx) / max(1, duration_hours)
+                temporal_detail = f"Temporal density: {velocity:.1f} tx/hr over a {duration_hours:.1f}h window."
+        except Exception:
+            temporal_detail = "Temporal anomaly: Clustering suggestive of automated script behavior."
+    else:
+        temporal_detail = "Insufficient temporal metadata available in source data."
 
-        # Role classification
-        if in_degree > 10 and out_degree < 2:
-            role = "Aggregator (Fan-in)"
-        elif out_degree > 10 and in_degree < 2:
-            role = "Distributor (Fan-out)"
-        elif in_degree >= 1 and out_degree >= 1:
-            role = "Intermediary Layer"
-        else:
-            role = "Isolated Node"
+    # Role classification
+    if in_degree > 10 and out_degree < 2:
+        role = "Aggregator (Fan-in)"
+    elif out_degree > 10 and in_degree < 2:
+        role = "Distributor (Fan-out)"
+    elif in_degree >= 1 and out_degree >= 1:
+        role = "Intermediary Layer"
+    else:
+        role = "Isolated Node"
 
-        return {
-            "account_id": account_id,
-            "forensic_summary": f"Behavioral analysis of {account_id} reveals a high-risk {role} pattern.",
-            "behavioral_flags": [
-                { "type": "Topology", "detail": f"Degree centrality ({in_degree} in, {out_degree} out) confirms intermediary role." },
-                { "type": "Temporal", "detail": temporal_detail }
-            ],
-            "recommendation": "IMMEDIATE FREEZE. High-velocity aggregator profile detected." if in_degree > 10 else "MONITOR. Potential shell entity in fund-routing chain.",
-            "prediction_confidence": 0.85 + (0.10 * (min(1.0, (in_degree + out_degree) / 20)))
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return {
+        "account_id": account_id,
+        "forensic_summary": f"Behavioral analysis of {account_id} reveals a high-risk {role} pattern.",
+        "behavioral_flags": [
+            { "type": "Topology", "detail": f"Degree centrality ({in_degree} in, {out_degree} out) confirms intermediary role." },
+            { "type": "Temporal", "detail": temporal_detail }
+        ],
+        "recommendation": "IMMEDIATE FREEZE. High-velocity aggregator profile detected." if in_degree > 10 else "MONITOR. Potential shell entity in fund-routing chain.",
+        "prediction_confidence": 0.85 + (0.10 * (min(1.0, (in_degree + out_degree) / 20)))
+    }
 
-@app.post("/generate-demo")
+@router.post("/generate-demo")
 async def generate_demo_endpoint():
     """Trigger the generation of a demo dataset and return the stream"""
-    try:
-        from generate_data import generate_test_csv
-        
-        # Use in-memory buffer to avoid Vercel Read-Only File System errors
-        output_buffer = io.StringIO()
-        generate_test_csv(num_transactions=1500, output_file=output_buffer)
-        output_buffer.seek(0)
-        
-        df = pd.read_csv(output_buffer)
-        df = map_columns(df)
-        return StreamingResponse(analyze_dataframe(df), media_type="text/event-stream")
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+    from generate_data import generate_test_csv
+    
+    # Use in-memory buffer to avoid Vercel Read-Only File System errors
+    output_buffer = io.StringIO()
+    generate_test_csv(num_transactions=1500, output_file=output_buffer)
+    output_buffer.seek(0)
+    
+    df = pd.read_csv(output_buffer)
+    df = map_columns(df)
+    return StreamingResponse(analyze_dataframe(df), media_type="text/event-stream")
+
+app.include_router(router)
