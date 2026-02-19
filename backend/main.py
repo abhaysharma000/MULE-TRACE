@@ -13,7 +13,7 @@ except ImportError:
     from backend.engine import ForensicsEngine
     from backend.models import AnalysisResponse, AnalysisSummary
 
-app = FastAPI(title="Financial Forensics Engine")
+app = FastAPI(title="MULE TRACE - Financial Forensics Engine")
 
 # Global Exception Handler
 @app.exception_handler(Exception)
