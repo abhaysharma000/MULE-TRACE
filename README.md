@@ -1,89 +1,120 @@
-# Financial Forensics Engine (RIFT Hackathon Edition)
+# 🏔️ MULE TRACE: Financial Forensics Intelligence
+### *Official Submission for the RIFT Financial Forensics Hackathon*
 
-A high-performance, web-based intelligence platform designed to expose money muling networks through advanced graph analysis, temporal windowing, and behavior-based scoring.
+**Mule Trace** is a high-performance, web-based intelligence platform designed to expose "Money Muling" networks. It utilizes advanced graph analysis, temporal windowing, and behavior-based heuristic scoring to identify illicit fund flows and laundering "carousel" schemes with forensic precision.
 
-**🔗 Mandatory Links for Submission**:
-- **Live Demo URL**: [INSERT VERCEL/RAILWAY URL HERE]
-- **LinkedIn Video Post**: [INSERT LINKEDIN POST URL HERE]
-- **GitHub Repository**: [INSERT GITHUB REPO URL HERE]
+---
 
-## 🚀 Tech Stack
-- **Frontend**: React (Vite), Tailwind CSS, Lucide Icons, Vis-network (Graph Visualization)
-- **Backend**: Python (FastAPI), Pandas, NetworkX
-- **Analysis Engine**: Custom Python-based Graph Intelligence Module
+## 🔗 Project Links
+- **Live Demo**: [Mule Trace on Vercel](https://money-muling-delta.vercel.app/) *(Placeholder)*
+- **GitHub Repository**: [Mule Trace Repo](https://github.com/abhaysharma000/Money-Muling)
+- **LinkedIn/Video Demo**: [Forensic Deep-Dive Video](https://inkedin.com/in/abhay-sharma) *(Placeholder)*
+
+---
+
+## 🛠 Technology Stack
+
+### **Frontend (Visual Intelligence Layer)**
+- **React (Vite)**: Lightning-fast rendering and modular state management.
+- **Tailwind CSS**: Premium dark-themed UI for a professional forensic command center.
+- **Vis-network**: Robust force-directed graph library for interactive topology exploration.
+- **Lucide Icons**: High-fidelity iconography.
+
+### **Backend (Analytical Engine)**
+- **FastAPI**: Asynchronous, high-performance Python API framework.
+- **NetworkX**: Industrial-grade graph theory library for cycle detection and path traversal.
+- **Pandas**: Advanced data manipulation for fuzzy CSV ingestion and vectorized temporal windowing.
+- **Uvicorn**: High-speed ASGI server.
+
+---
 
 ## 🏗 System Architecture
-The platform follows a decoupled client-server architecture:
-1.  **Ingestion Layer**: Processes raw CSV data with fuzzy column mapping.
-2.  **Graph Engine**: Constructs a directed multi-graph of all transactions.
-3.  **Heuristic Layer**: Runs multiple detection passes (Cycles, Smurfing, Shell Chains).
-4.  **Scoring Engine**: Aggregates pattern matches into a normalized Suspicion Score (0-100).
-5.  **Visualization Layer**: Renders an interactive topology using a force-directed layout.
+The platform follows a **Decoupled Forensic Architecture**:
+1.  **Ingestion Layer**: Sanitizes raw input (CSV) using fuzzy logic mapping to accommodate various bank statement formats.
+2.  **Graph Synthesis Engine**: Translates transactional records into a multi-directed graph where accounts are nodes and transfers are directed edges.
+3.  **Heuristic Intelligence Layer**: Executes specific forensic passes to identify topological red flags.
+4.  **Risk Scoring Matrix**: A weighted normalization engine that calculates a 0-100 "Suspicion Score" for every entity.
+5.  **Interactive Visualization**: A dynamic UI that allows users to "scrub" through time and deep-dive into suspicious clusters.
 
-## 📂 Project Structure
-```text
-├── backend/            # FastAPI analytics server
-│   ├── engine.py       # Core Graph Intelligence Module
-│   ├── main.py         # API endpoints & data streaming
-│   └── requirements.txt
-├── frontend/           # React interactive dashboard
-│   ├── src/
-│   │   ├── components/ # GraphView, StatsDashboard, etc.
-│   │   └── App.jsx     # Main Application state & UI logic
-│   └── package.json
-└── README.md           # Mandatory Documentation
-```
-
-## 📖 Usage Instructions
-
-1.  **One-Click Start**: Run `START_SYSTEM.bat` (Windows) to initialize everything.
-2.  **Forensic Command Center**: All critical controls are located in the top-right box.
-    *   **Injest Data**: Upload your own CSV here.
-    *   **Load Demo Data**: One-click to generate and auto-load a forensic dataset for your demo.
-    *   **Risk Filter**: Real-time adjustment for high-risk node visibility.
-3.  **Explore Topology**: Use the interactive graph to identify clusters. Red nodes represent high-risk accounts (>70%).
-4.  **Simulation & Deep Dive**: Use the **Play** button for chronological replay and click nodes for **AI Forensic Reports**.
-5.  **Download JSON**: Standardized RIFT report ready for submission.
+---
 
 ## 🧠 Algorithm Approach & Complexity Analysis
 
 ### 1. Circular Fund Routing (Cycles)
-- **Approach**: Uses Johnson’s algorithm (via NetworkX `simple_cycles`) to find circuits of length 3-5.
-- **Optimization**: Search is restricted to a subgraph of non-legitimate entities with degree > 1.
-- **Complexity**: $O((V+E)(c+1))$ where $c$ is the number of cycles. Depth-limiting ensures $O(V+E)$ performance on 10K datasets.
+- **Concept**: Detects "carousel" schemes where money eventually returns to a source or proxy.
+- **Algorithm**: Uses **Johnson’s Algorithm** (via NetworkX `simple_cycles`) to find circuits of length 3-5.
+- **Complexity**: $O((V+E)(c+1))$ where $c$ is the number of cycles. Optimized by restricting search to high-risk subgraphs.
 
-### 2. Smurfing (Fan-in / Fan-out)
-- **Approach**: Sliding 72-hour window. Detects 10+ distinct sources (Fan-in) or destinations (Fan-out) within any 3-day window.
-- **Complexity**: $O(N \log N)$ where $N$ is the transaction count, primarily driven by temporal sorting.
+### 2. Smurfing / Structuring (Temporal Windowing)
+- **Concept**: Identifies many small transactions converging on or dispersing from a single account.
+- **Algorithm**: Vectorized **Sliding 72-hour window**. Detects $>10$ distinct partners within any 3-day burst.
+- **Complexity**: $O(N \log N)$ where $N$ is the transaction count (dominated by temporal sorting).
 
 ### 3. Layered Shell Networks
-- **Approach**: Linear chain traversal identifying "bridge" accounts with strictly 2-3 transactions.
-- **Complexity**: $O(V + E)$ (Breadth-First Search variant).
+- **Concept**: Identifies "Bridge" accounts used solely to add layers of complexity.
+- **Algorithm**: Linear chain traversal identifying accounts with strictly 2-3 transactions and low fund residence time.
+- **Complexity**: $O(V + E)$ (Linear Breadth-First traversal).
+
+### 4. Advanced Temporal Analysis (New)
+- **Nocturnal Detection**: Flags accounts with $>40\%$ activity between 11 PM and 5 AM (dead-of-night).
+- **Robotic Consistency**: Detects high-regularity cadences (Low Coefficient of Variation) suggestive of automated script behavior.
+
+---
 
 ## 📊 Suspicion Score Methodology
-The **Suspicion Score ($S$)** is a weighted aggregate capped at 100:
-- **Smurfing (Fan-in/out)**: $+40$ pts (High-priority signal)
-- **Cycles (Circuits)**: $+25$ pts
-- **Shell Chains**: $+20$ pts
-- **High Velocity/Bursts**: $+15$ pts
+The **Suspicion Score ($S$)** is calculated using a priority-weighted formula:
+- **Structuring (Smurfing)**: `+40 points` (Highest priority signal)
+- **Graph Cycles**: `+25 points`
+- **Nocturnal Activity**: `+25 points`
+- **Layered Shell Chains**: `+20 points`
+- **High Velocity/Bursts**: `+15 points`
 
-*False Positive Control: Nodes identified as merchants (50+ partners, consistent volume) or payroll (monthly cadence, stable amount) are whitelisted.*
+*Note: The engine includes a "Whitelist Logic" to filter out legitimate entities like payroll systems or known large-scale merchants.*
 
-## 🛠 Installation & Setup
+---
 
-### 🚀 Standard Setup (Recommended)
-1.  **Extract** the project folder.
-2.  **Double-click** `START_SYSTEM.bat`.
-    *   This will install dependencies, start servers, and open the dashboard automatically.
+## 📖 Installation & Setup (One-Click)
 
-### Manual Setup
-1.  **Backend**: `cd backend && pip install -r requirements.txt && uvicorn main:app`
-2.  **Frontend**: `cd frontend && npm install && npm run dev`
+### **Windows (Recommended)**
+1.  Extract the project folder.
+2.  Double-click `START_SYSTEM.bat`.
+    *   This will automatically install dependencies (npm/pip), start the backend, launch the frontend, and open your browser to the dashboard.
+
+### **Manual Setup**
+1.  **Backend**:
+    ```bash
+    cd backend
+    pip install -r requirements.txt
+    python -m uvicorn main:app
+    ```
+2.  **Frontend**:
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+
+---
+
+## 🚀 Usage Instructions
+1.  **Ingest Data**: Upload custom bank data via CSV or click **Load Demo Data**.
+2.  **Forensic Replay**: Use the **Play** button to watch transactions unfold chronologically on the graph.
+3.  **Inspect Topology**: Nodes turn **Red** based on their risk score (>70%).
+4.  **AI Forensic Report**: Click any suspicious node to generate a deep-dive analysis (AI Laboratory).
+5.  **Granular Trending**: Hover over the **Volume Trends** to see hourly or daily burst analysis.
+
+---
 
 ## ⚠️ Known Limitations
-- Capped at 5-hop cycles for performance.
-- Requires transaction timestamps for temporal windowing.
+- Cycle detection is capped at a depth of 5 hops to maintain realtime performance on larger datasets.
+- Requires standard transaction timestamps (ISO 8601 or similar) for temporal analysis.
+- Currently optimized for desktop resolutions (1920x1080) for the most immersive command center experience.
+
+---
 
 ## 👥 Team Members
-- **Abhay** - Lead Engineer (Full-Stack & Forensic Algorithms)
-- **[Insert Other Team Members]**
+- **Abhay Sharma** - Lead Engineer (Graph Algorithms & Full-Stack Architecture)
+- **[Insert Team Members]**
+
+---
+*Developed for the RIFT RIFT Financial Forensics Hackathon.*
