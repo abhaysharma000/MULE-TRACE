@@ -230,7 +230,10 @@ async def ai_analyze_endpoint(account_id: str):
 @router.post("/generate-demo")
 async def generate_demo_endpoint():
     """Trigger the generation of a demo dataset and return the stream"""
-    from generate_data import generate_test_csv
+    try:
+        from generate_data import generate_test_csv
+    except ImportError:
+        from backend.generate_data import generate_test_csv
     
     # Use in-memory buffer to avoid Vercel Read-Only File System errors
     output_buffer = io.StringIO()
