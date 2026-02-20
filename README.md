@@ -6,9 +6,9 @@
 ---
 
 ## 🔗 Project Links
-- **Live Demo**: [Mule Trace on Vercel](https://money-muling-delta.vercel.app/) *(Placeholder)*
-- **GitHub Repository**: [Mule Trace Repo](https://github.com/abhaysharma000/Money-Muling)
-- **LinkedIn/Video Demo**: [Forensic Deep-Dive Video](https://inkedin.com/in/abhay-sharma) *(Placeholder)*
+- **Live Demo**: [Mule Trace on Vercel](https://mule-trace-alpha.vercel.app/)
+- **GitHub Repository**: [Mule Trace Repo](https://github.com/abhaysharma000/MULE-TRACE)
+- **LinkedIn/Video Demo**: [Forensic Deep-Dive Video](https://linkedin.com/in/abhay-sharma)
 
 ---
 
@@ -117,4 +117,4 @@ The **Suspicion Score ($S$)** is calculated using a priority-weighted formula:
 - **[Insert Team Members]**
 
 ---
-*Developed for the RIFT RIFT Financial Forensics Hackathon.*
+
